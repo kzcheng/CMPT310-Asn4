@@ -42,7 +42,7 @@ from util import manhattanDistance, raiseNotDefined
 VERBOSE = True
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
-logging.getLogger().setLevel(logging.DEBUG)
+# logging.getLogger().setLevel(logging.DEBUG)
 
 
 class DiscreteDistribution(dict):
@@ -107,16 +107,22 @@ class DiscreteDistribution(dict):
         {}
         """
         "*** YOUR CODE HERE ***"  # Q0
+        loggingLevel = logging.getLogger().getEffectiveLevel()
+        # logging.getLogger().setLevel(logging.DEBUG)
+        try:
 
-        logging.debug(f"self = {self}")
+            logging.debug(f"self = {self}")
 
-        total = self.total()
-        logging.debug(f"total = {total}")
+            total = self.total()
+            logging.debug(f"total = {total}")
 
-        if total == 0:
-            return
-        for key in self:
-            self[key] /= total
+            if total == 0:
+                return
+            for key in self:
+                self[key] /= total
+
+        finally:
+            logging.getLogger().setLevel(loggingLevel)
 
     def sample(self):
         """
@@ -140,14 +146,34 @@ class DiscreteDistribution(dict):
         0.0
         """
         "*** YOUR CODE HERE ***"  # Q0
+        loggingLevel = logging.getLogger().getEffectiveLevel()
+        # logging.getLogger().setLevel(logging.DEBUG)
+        try:
 
-        total = self.total()
-        r = random.uniform(0, total)
-        cumulative = 0.0
-        for key, value in self.items():
-            cumulative += value
-            if r < cumulative:
-                return key
+            total = self.total()
+            r = random.uniform(0, total)
+            cumulative = 0.0
+            for key, value in self.items():
+                cumulative += value
+                if r < cumulative:
+                    return key
+
+        finally:
+            logging.getLogger().setLevel(loggingLevel)
+
+
+# Question 1 (2 points): Observation Probability
+
+# In this question, you will implement the getObservationProb method in the InferenceModule base class in inference.py . This method takes in an observation (which is a noisy reading of the distance to the ghost), Pacman's position, the ghost's position, and the position of the ghost's jail, and returns the probability of the noisy distance reading given Pacman's position and the ghost's position. In other words, we want to return P(noisyDistance | pacmanPosition, ghostPosition) .
+
+# The distance sensor has a probability distribution over distance readings given the true distance from Pacman to the ghost. This distribution is modeled by the function busters.getObservationProbability(noisyDistance, trueDistance) , which returns P(noisyDistance | trueDistance) and is provided for you. You should use this function to help you solve the problem, and use the provided manhattanDistance function to find the distance between Pacman's location and the ghost's location.
+
+# However, there is the special case of jail that we have to handle as well. Specifically, when we capture a ghost and send it to the jail location, our distance sensor deterministically returns None , and nothing else. So, if the ghost's position is the jail position, then the observation is None with probability 1, and everything else with probability 0. Conversely, if the distance reading is not None , then the ghost is in jail with probability 0. If the distance reading is None, then the ghost is in jail with probability 1. Make sure you handle this special case in your implementation.
+
+# To test your code and run the autograder for this question:
+#   python autograder.py -q q1
+
+# As a general note, it is possible for some of the autograder tests to take a long time to run for this project, and you will have to exercise patience. As long as the autograder doesn't time out, you should be fine (provided that you actually pass the tests).
 
 
 class InferenceModule:
@@ -216,8 +242,25 @@ class InferenceModule:
         """
         Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
         """
-        "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        "*** YOUR CODE HERE ***"  # Q1
+        loggingLevel = logging.getLogger().getEffectiveLevel()
+        # logging.getLogger().setLevel(logging.DEBUG)
+        try:
+
+            if ghostPosition == jailPosition:
+                return 1.0 if noisyDistance is None else 0.0
+            if noisyDistance is None:
+                return 0.0
+
+            trueDistance = manhattanDistance(pacmanPosition, ghostPosition)
+            obProb = busters.getObservationProbability(noisyDistance, trueDistance)
+            logging.debug(f"obProb = {obProb}")
+
+            logging.getLogger().setLevel(logging.INFO)
+            return obProb
+
+        finally:
+            logging.getLogger().setLevel(loggingLevel)
 
     def setGhostPosition(self, gameState, ghostPosition, index):
         """
