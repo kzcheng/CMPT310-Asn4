@@ -337,6 +337,25 @@ class InferenceModule:
         raise NotImplementedError
 
 
+# Question 2 (3 points): Exact Inference Observation
+
+# In this question, you will implement the observeUpdate method in ExactInference class of inference.py to correctly update the agent's belief distribution over ghost positions given an observation from Pacman's sensors. You are implementing the online belief update for observing new evidence. The observe method should, for this problem, update the belief at every position on the map after receiving a sensor reading. You should iterate your updates over the variable self.allPositions which includes all legal positions plus the special jail position. Beliefs represent the probability that the ghost is at a particular location, and are stored as a DiscreteDistribution object in a field called self.beliefs , which you should update.
+
+# Before typing any code, write down the equation of the inference problem you are trying to solve. You should use the function self.getObservationProb that you wrote in the last question, which returns the probability of an observation given Pacman's position, a potential ghost position, and the jail position. You can obtain Pacman's position using gameState.getPacmanPosition() , and the jail position using self.getJailPosition() .
+
+# In the Pacman display, high posterior beliefs are represented by bright colors, while low beliefs are represented by dim colors. You should start with a large cloud of belief that shrinks over time as more evidence accumulates. As you watch the test cases, be sure that you understand how the squares converge to their final coloring.
+
+# Note: your busters agents have a separate inference module for each ghost they are tracking. That's why if you print an observation inside the update function, you'll only see a single number even though there may be multiple ghosts on the board.
+
+# To run the autograder for this question and visualize the output:
+#   python autograder.py -q q2
+
+# If you want to run this test (or any of the other tests) without graphics you can add the following flag:
+#   python autograder.py -q q2 --no-graphics
+
+# *IMPORTANT*: In general, it is possible sometimes for the autograder to time out if running the tests with graphics. To accurately determine whether or not your code is efficient enough, you should run the tests with the --no-graphics flag. If the autograder passes with this flag, then you will receive full points, even if the autograder times out with graphics.
+
+
 class ExactInference(InferenceModule):
     """
     The exact dynamic inference module should use forward algorithm updates to
@@ -368,10 +387,22 @@ class ExactInference(InferenceModule):
         current position. However, this is not a problem, as Pacman's current
         position is known.
         """
-        "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        "*** YOUR CODE HERE ***"  # Q2
+        loggingLevel = logging.getLogger().getEffectiveLevel()
+        # logging.getLogger().setLevel(logging.DEBUG)
+        try:
 
-        self.beliefs.normalize()
+            pacmanPos = gameState.getPacmanPosition()
+            jailPos = self.getJailPosition()
+
+            for pos in self.allPositions:
+                obsProb = self.getObservationProb(observation, pacmanPos, pos, jailPos)
+                self.beliefs[pos] *= obsProb  # Update belief
+
+            self.beliefs.normalize()  # Ensure probabilities sum to 1
+
+        finally:
+            logging.getLogger().setLevel(loggingLevel)
 
     def elapseTime(self, gameState):
         """
